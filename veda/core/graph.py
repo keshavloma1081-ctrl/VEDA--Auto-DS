@@ -11,28 +11,27 @@ def build_veda_graph():
 
     graph = StateGraph(dict)
 
-    # ── Import agents ────────────────────────────────────────
     from veda.agents.core_pipeline.planner import PlannerAgent
     from veda.agents.core_pipeline.ingest import IngestAgent
     from veda.agents.core_pipeline.eda import EDAAgent
+    from veda.agents.core_pipeline.cleaning import CleaningAgent
 
-    # ── Instantiate agents ───────────────────────────────────
     planner = PlannerAgent()
     ingest = IngestAgent()
     eda = EDAAgent()
+    cleaning = CleaningAgent()
 
-    # ── Register nodes ───────────────────────────────────────
     graph.add_node("planner", planner.execute)
     graph.add_node("ingest", ingest.execute)
     graph.add_node("eda", eda.execute)
+    graph.add_node("cleaning", cleaning.execute)
 
-    # ── Define edges ─────────────────────────────────────────
     graph.set_entry_point("planner")
     graph.add_edge("planner", "ingest")
     graph.add_edge("ingest", "eda")
-    graph.add_edge("eda", END)
+    graph.add_edge("eda", "cleaning")
+    graph.add_edge("cleaning", END)
 
-    # ── Compile with memory ──────────────────────────────────
     memory = MemorySaver()
     compiled = graph.compile(checkpointer=memory)
 
