@@ -1,44 +1,36 @@
 """
 VEDA — Autonomous Data Science System
 core/graph.py — LangGraph pipeline definition
-
-This is the skeleton of the AutoDS pipeline.
-Each agent is a node. Edges define the flow.
-State is shared via VEDAState.
 """
 
 from langgraph.graph import StateGraph, END
 from langgraph.checkpoint.memory import MemorySaver
-from veda.core.state import VEDAState
 
 
 def build_veda_graph():
-    """
-    Builds and compiles the full VEDA LangGraph pipeline.
-    Agents are added here as nodes as we build them.
-    """
 
-    # ── Initialise graph with VEDAState ──────────────────────
     graph = StateGraph(dict)
 
     # ── Import agents ────────────────────────────────────────
-    # We import here to avoid circular imports
-    # Add more agents here as we build them sprint by sprint
     from veda.agents.core_pipeline.planner import PlannerAgent
     from veda.agents.core_pipeline.ingest import IngestAgent
+    from veda.agents.core_pipeline.eda import EDAAgent
 
     # ── Instantiate agents ───────────────────────────────────
     planner = PlannerAgent()
     ingest = IngestAgent()
+    eda = EDAAgent()
 
     # ── Register nodes ───────────────────────────────────────
     graph.add_node("planner", planner.execute)
     graph.add_node("ingest", ingest.execute)
+    graph.add_node("eda", eda.execute)
 
     # ── Define edges ─────────────────────────────────────────
     graph.set_entry_point("planner")
     graph.add_edge("planner", "ingest")
-    graph.add_edge("ingest", END)
+    graph.add_edge("ingest", "eda")
+    graph.add_edge("eda", END)
 
     # ── Compile with memory ──────────────────────────────────
     memory = MemorySaver()
@@ -48,10 +40,6 @@ def build_veda_graph():
 
 
 def run_veda(goal: str, dataset_path: str):
-    """
-    Entry point to run the full VEDA pipeline.
-    Pass a goal and dataset path — VEDA does the rest.
-    """
 
     print("\n" + "="*50)
     print("  VEDA — Autonomous Data Science System")
@@ -60,7 +48,6 @@ def run_veda(goal: str, dataset_path: str):
     print(f"  Dataset     : {dataset_path}")
     print("="*50 + "\n")
 
-    # Build initial state
     initial_state = {
         "goal": goal,
         "dataset_path": dataset_path,
@@ -90,10 +77,8 @@ def run_veda(goal: str, dataset_path: str):
         }
     }
 
-    # Build and run graph
     veda = build_veda_graph()
     config = {"configurable": {"thread_id": "veda-run-1"}}
-
     result = veda.invoke(initial_state, config=config)
 
     print("\n" + "="*50)
