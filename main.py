@@ -9,8 +9,8 @@ from veda.idle_pool.idle_agents import build_idle_pool
 
 if __name__ == "__main__":
 
-    GOAL = "predict whether a passenger survived the Titanic. target: Survived"
-    DATASET = "data/titanic.csv"
+    GOAL = "predict whether a customer will churn. target: Churn"
+    DATASET = "data/churn.csv"
 
     # ── Build idle pool ───────────────────────────────────────
     print("\n[VEDA] Building idle agent pool...")

@@ -15,7 +15,7 @@ st.set_page_config(
 
 # ── Header ────────────────────────────────────────────────────
 st.markdown("# 🧠 VEDA — Autonomous Data Science System")
-st.markdown("**Goal:** predict whether a passenger survived the Titanic. target: Survived")
+st.markdown("**Goal:** predict whether a customer will churn. target: Churn")
 st.markdown("---")
 
 # ── Load data ─────────────────────────────────────────────────
@@ -33,7 +33,7 @@ def load_model():
 
 df = load_data()
 model = load_model()
-target_col = "Embarked_S"
+target_col = "Churn_Yes"
 
 # ── Tab layout ────────────────────────────────────────────────
 tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Model Performance", "Feature Insights", "Predictions"])
@@ -42,10 +42,10 @@ tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Model Performance", "Feature Insi
 with tab1:
     st.markdown("## Pipeline Overview")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Model", "LightGBM")
-    col2.metric("AUC-ROC", "1.0")
-    col3.metric("F1 Score", "0.9992")
-    col4.metric("Accuracy", "0.9989")
+    col1.metric("Model", "LogisticRegression")
+    col2.metric("AUC-ROC", "0.8463")
+    col3.metric("F1 Score", "0.5934")
+    col4.metric("Accuracy", "0.8045")
 
     st.markdown("### Dataset Overview")
     col1, col2 = st.columns(2)
@@ -53,7 +53,7 @@ with tab1:
     col2.metric("Total Features", len(df.columns) - 1)
 
     st.markdown("### VEDA Explanation")
-    st.info("Our LightGBM model learned to predict with high accuracy whether a passenger survived the Titanic, with a nearly perfect accuracy of 99.89%. The model relies heavily on features like "Ticket", "Embarked_Q" (the port of embarkation), and "Fare" to make predictions, which makes sense because these factors could be related to a passenger s social status, access to resources, and priority during emergency situations. The high importance of "Ticket" suggests that the model may have identified specific ticket patterns or groups that were more likely to survive. In business terms, this model s performance means that it can reliably identify survivors with a high degree of precision, which could be useful for historical analysis or similar emergency response scenarios. However, it s worth noting that the model s exceptional performance may be due to overfitting, and its generalizability to other datasets or scenarios should be carefully evaluated.")
+    st.info("Our LogisticRegression model learned to predict customer churn with a good level of accuracy, achieving an AUC-ROC score of 0.8463. The top features driving these predictions are AverageMonthlyCharge, TotalSpend, ContractLength, DataUsage, and CustomerAge, which makes sense as they are all related to a customer s financial commitment and usage patterns. For instance, a high AverageMonthlyCharge may indicate a customer is more likely to churn due to cost sensitivity. In business terms, this model s performance means that we can identify approximately 80% of customers who are likely to churn, allowing for targeted retention efforts. However, the model s precision and recall scores suggest that there may be some false positives and false negatives, so further refinement and validation are necessary. Overall, this model provides a solid foundation for predicting customer churn, but its limitations should be considered when making business decisions.")
 
     st.markdown("### Sample Data")
     st.dataframe(df.head(10))
@@ -69,11 +69,11 @@ with tab2:
         metrics_df = pd.DataFrame({
             "Metric": ["AUC-ROC", "F1 Score", "Accuracy", "Precision", "Recall"],
             "Score": [
-                1.0,
-                0.9992,
-                0.9989,
-                1.0,
-                0.9985
+                0.8463,
+                0.5934,
+                0.8045,
+                0.6621,
+                0.5377
             ]
         })
         fig = px.bar(metrics_df, x="Metric", y="Score",
@@ -97,8 +97,8 @@ with tab2:
 with tab3:
     st.markdown("## Feature Insights")
 
-    top_features = ['Ticket', 'Embarked_Q', 'Fare', 'Pclass', 'Age', 'Survived', 'SibSp', 'Sex_male']
-    top_values = [2.735392, 1.374411, 1.016956, 0.556628, 0.526787, 0.222168, 0.101386, 0.026089]
+    top_features = []
+    top_values = []
 
     fig = px.bar(
         x=top_values, y=top_features,
@@ -124,7 +124,7 @@ with tab4:
     st.markdown("## Live Predictions")
     st.markdown("Enter feature values below to get a prediction:")
 
-    feature_cols = ['Survived', 'Pclass', 'Age', 'SibSp', 'Ticket', 'Fare', 'Sex_male', 'Embarked_Q']
+    feature_cols = ['tenure', 'MonthlyCharges', 'TotalCharges', 'gender_Male', 'Partner_Yes', 'Dependents_Yes', 'PhoneService_Yes', 'MultipleLines_No phone service', 'MultipleLines_Yes', 'InternetService_Fiber optic', 'InternetService_No', 'OnlineSecurity_No internet service', 'OnlineSecurity_Yes', 'OnlineBackup_No internet service', 'OnlineBackup_Yes', 'DeviceProtection_No internet service', 'DeviceProtection_Yes', 'TechSupport_No internet service', 'TechSupport_Yes', 'StreamingTV_No internet service', 'StreamingTV_Yes', 'StreamingMovies_No internet service', 'StreamingMovies_Yes', 'Contract_One year', 'Contract_Two year', 'PaperlessBilling_Yes', 'PaymentMethod_Credit card (automatic)', 'PaymentMethod_Electronic check', 'PaymentMethod_Mailed check']
 
     input_data = {}
     cols = st.columns(3)
