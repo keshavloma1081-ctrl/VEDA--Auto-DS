@@ -10,6 +10,7 @@ def build_veda_graph():
     from veda.agents.core_pipeline.feature_engineering import FeatureEngineeringAgent
     from veda.agents.core_pipeline.model_selection import ModelSelectionAgent
     from veda.agents.core_pipeline.training import TrainingAgent
+    from veda.agents.core_pipeline.evaluation import EvaluationAgent
     planner = PlannerAgent()
     ingest = IngestAgent()
     eda = EDAAgent()
@@ -17,6 +18,7 @@ def build_veda_graph():
     features = FeatureEngineeringAgent()
     model_sel = ModelSelectionAgent()
     training = TrainingAgent()
+    evaluation = EvaluationAgent()
     graph.add_node("planner", planner.execute)
     graph.add_node("ingest", ingest.execute)
     graph.add_node("eda", eda.execute)
@@ -24,6 +26,7 @@ def build_veda_graph():
     graph.add_node("feature_engineering", features.execute)
     graph.add_node("model_selection", model_sel.execute)
     graph.add_node("training", training.execute)
+    graph.add_node("evaluation", evaluation.execute)
     graph.set_entry_point("planner")
     graph.add_edge("planner", "ingest")
     graph.add_edge("ingest", "eda")
@@ -31,7 +34,8 @@ def build_veda_graph():
     graph.add_edge("cleaning", "feature_engineering")
     graph.add_edge("feature_engineering", "model_selection")
     graph.add_edge("model_selection", "training")
-    graph.add_edge("training", END)
+    graph.add_edge("training", "evaluation")
+    graph.add_edge("evaluation", END)
     memory = MemorySaver()
     return graph.compile(checkpointer=memory)
 
@@ -68,4 +72,4 @@ def run_veda(goal, dataset_path):
 
 with open("veda/core/graph.py", "w", encoding="utf-8") as f:
     f.write(graph_code)
-print("graph.py updated with TrainingAgent!")
+print("graph.py updated with EvaluationAgent!")
