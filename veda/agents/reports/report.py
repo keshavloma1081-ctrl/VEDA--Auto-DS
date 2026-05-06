@@ -1,12 +1,4 @@
-report_code = open("veda/agents/reports/report.py", "r", encoding="utf-8").read()
-
-# Fix the problematic HTML line
-old = '''<p>Evaluation status: <span class="""" + ("pass" if passed else "fail") + """">""" + ("PASSED" if passed else "FAILED") + """ threshold (AUC &ge; 0.70)</span></p>'''
-
-new = '''<p>Evaluation status: <span class="result">''' + '" + eval_status + "' + '''</span></p>'''
-
-# Instead let's just rewrite the whole report.py cleanly
-code = """import os
+import os
 import json
 from datetime import datetime
 from groq import Groq
@@ -30,11 +22,11 @@ class ReportAgent(BaseAgent):
             return json.load(f)
 
     def _generate_summary(self, goal, model_name, metrics, explanation, top_features):
-        prompt = "You are VEDA. Write 3 bullet points (starting with -) summarizing this ML project.\\n"
-        prompt += "Goal: " + goal + "\\n"
-        prompt += "Model: " + model_name + "\\n"
-        prompt += "AUC=" + str(metrics.get("auc_roc", "N/A")) + " F1=" + str(metrics.get("f1_score", "N/A")) + "\\n"
-        prompt += "Top features: " + str(top_features[:3]) + "\\n"
+        prompt = "You are VEDA. Write 3 bullet points (starting with -) summarizing this ML project.\n"
+        prompt += "Goal: " + goal + "\n"
+        prompt += "Model: " + model_name + "\n"
+        prompt += "AUC=" + str(metrics.get("auc_roc", "N/A")) + " F1=" + str(metrics.get("f1_score", "N/A")) + "\n"
+        prompt += "Top features: " + str(top_features[:3]) + "\n"
         prompt += "Be concise and professional."
         response = self.client.chat.completions.create(
             model=self.model,
@@ -70,12 +62,12 @@ class ReportAgent(BaseAgent):
 
         self.log("Generating executive summary...")
         summary = self._generate_summary(goal, model_name, metrics, explanation, top_features)
-        summary_html = summary.replace("-", "<br>-").replace("\\n", "<br>")
+        summary_html = summary.replace("-", "<br>-").replace("\n", "<br>")
 
         cleaning_rows = "".join(["<tr><td>" + c + "</td></tr>" for c in cleaning_diff])
         feature_rows = "".join(["<tr><td>" + str(f) + "</td></tr>" for f in feature_list[:10]])
         feature_tags = " ".join(["<span style='background:#1F4E79;color:white;padding:3px 10px;border-radius:20px;font-size:11px;margin:2px'>" + str(f) + "</span>" for f in top_features[:5]])
-        explanation_clean = explanation.replace("\\n", "<br>")
+        explanation_clean = explanation.replace("\n", "<br>")
         run_id = state.get("run_id", datetime.now().strftime("%Y%m%d_%H%M%S"))
         timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
         rows = str(data_profile.get("row_count", "N/A"))
@@ -162,8 +154,3 @@ class ReportAgent(BaseAgent):
 
         self.log("REPORT COMPLETE — saved to: " + report_path)
         return state
-"""
-
-with open("veda/agents/reports/report.py", "w", encoding="utf-8") as f:
-    f.write(code)
-print("report.py fixed!")
