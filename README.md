@@ -2,13 +2,13 @@
 
 > Give VEDA a dataset and a goal in plain English. It does the rest.
 
-![Python]([https://img.shields.io/badge/Python-3.11+-blue.svg](https://img.shields.io/badge/Python-3.11+-blue.svg))
+Python
 
-![LangGraph]([https://img.shields.io/badge/LangGraph-0.1+-green.svg](https://img.shields.io/badge/LangGraph-0.1+-green.svg))
+LangGraph
 
-![License]([https://img.shields.io/badge/License-MIT-yellow.svg](https://img.shields.io/badge/License-MIT-yellow.svg))
+License
 
-![Status]([https://img.shields.io/badge/Status-Active-brightgreen.svg](https://img.shields.io/badge/Status-Active-brightgreen.svg))
+Status
 
 ---
 
@@ -19,19 +19,14 @@ VEDA is an **autonomous data science system** powered by 11 AI agents that colla
 **You provide:**
 
 - A CSV file
-
 - A goal in plain English: *"predict whether a customer will churn"*
 
 **VEDA delivers:**
 
 - ✅ A trained, evaluated ML model (AUC, F1, Accuracy)
-
 - ✅ A live Streamlit dashboard with predictions
-
 - ✅ A professional HTML report with executive summary
-
 - ✅ SHAP feature explanations
-
 - ✅ Full MLflow experiment tracking
 
 ---
@@ -94,7 +89,7 @@ pip install -r requirements.txt
 
 Create a `.env` file in the root folder:
 
-Get a free Groq API key at [[console.groq.com](http://console.groq.com)]([https://console.groq.com](https://console.groq.com))
+Get a free Groq API key at [console.groq.com]([https://console.groq.com](https://console.groq.com))
 
 ### 5. Add your dataset
 
@@ -134,11 +129,7 @@ streamlit run outputs/veda_[dashboard.py](http://dashboard.py)
 
 ## How It Works
 
-
-
 Input: CSV + Goal in plain English | v MasterPlanner <- Groq LLM classifies task, builds execution plan | v DataIngest <- Loads CSV, Parquet, JSON, Excel, SQL | v EDAAgent <- Statistics, correlations, outliers, imbalance | v CleaningAgent <- Null imputation, deduplication, winsorisation | v FeatureEngineering <- Encoding, scaling, datetime extraction | v ModelSelection <- Benchmarks XGBoost, LightGBM, RF, LR, Baseline | v TrainingAgent <- 5-fold CV, MLflow logging, model saved | v EvaluationAgent <- AUC, F1, Accuracy, Precision, Recall | v Explainability <- SHAP values + LLM plain-English explanation | v DashboardAgent <- 4-tab Streamlit app with live prediction form | v ReportAgent <- HTML report with AI executive summary | v Output: Trained Model + Live Dashboard + HTML Report
-
-
 
 ---
 
@@ -200,37 +191,23 @@ Input: CSV + Goal in plain English | v MasterPlanner <- Groq LLM classifies task
 
 VEDA--Auto-DS/ ├── veda/ │ ├── core/ │ │ ├── [state.py](http://state.py) # VEDAState — shared state for all agents │ │ ├── [graph.py](http://graph.py) # LangGraph pipeline definition │ │ └── base_[agent.py](http://agent.py) # BaseAgent class all agents inherit from │ ├── agents/ │ │ ├── core_pipeline/ # 9 core ML agents │ │ ├── dashboards/ # Dashboard generation agent │ │ └── reports/ # Report generation agent │ ├── monitors/ # Health monitor agents (coming soon) │ └── idle_pool/ # Replacement agent pool (coming soon) ├── data/ # Your datasets go here ├── outputs/ # All VEDA outputs saved here ├── [main.py](http://main.py) # Entry point ├── requirements.txt # Dependencies └── .env # API keys (not committed)
 
-
-
 ---
 
 ## Roadmap
 
-- [x] Core 11-agent autonomous pipeline
-
-- [x] Multi-source data ingestion
-
-- [x] Automated EDA and data cleaning
-
-- [x] 5-model benchmarking and selection
-
-- [x] Cross-validated training with MLflow tracking
-
-- [x] SHAP explainability
-
-- [x] 4-tab Streamlit dashboard
-
-- [x] HTML report with AI executive summary
-
-- [ ] Self-healing agent health monitors
-
-- [ ] Idle agent replacement pool
-
-- [ ] PDF report generation
-
-- [ ] REST API endpoint
-
-- [ ] Docker containerisation
+- Core 11-agent autonomous pipeline
+- Multi-source data ingestion
+- Automated EDA and data cleaning
+- 5-model benchmarking and selection
+- Cross-validated training with MLflow tracking
+- SHAP explainability
+- 4-tab Streamlit dashboard
+- HTML report with AI executive summary
+- Self-healing agent health monitors
+- Idle agent replacement pool
+- PDF report generation
+- REST API endpoint
+- Docker containerisation
 
 ---
 
@@ -239,13 +216,9 @@ VEDA--Auto-DS/ ├── veda/ │ ├── core/ │ │ ├── [state.py](
 Contributions welcome. Please open an issue first to discuss what you would like to change.
 
 1. Fork the repo
-
 2. Create your feature branch: `git checkout -b feature/new-agent`
-
 3. Commit your changes: `git commit -m "add new agent"`
-
 4. Push to the branch: `git push origin feature/new-agent`
-
 5. Open a Pull Request
 
 ---
@@ -267,6 +240,3 @@ MIT License — free to use, modify, and distribute.
 ---
 
 *VEDA — Vedic Autonomous Data Science Architecture*
-
-
-
