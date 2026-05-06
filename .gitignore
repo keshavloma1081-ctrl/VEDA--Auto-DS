@@ -216,3 +216,10 @@ __marimo__/
 
 # Streamlit
 .streamlit/secrets.toml
+# VEDA outputs — ignore large model files
+outputs/
+mlruns/
+mlflow.db
+*.pkl
+*.parquet
+*.db
