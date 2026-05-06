@@ -1,17 +1,7 @@
-"""
-VEDA — Autonomous Data Science System
-agents/core_pipeline/ingest.py — Data Ingest Agent
-
-Entry point for all data. Accepts CSV, Parquet, JSON, Excel.
-Loads data, infers schema, profiles it, and writes
-a clean typed DataFrame summary to VEDAState.
-"""
-
 import os
 import pandas as pd
 from datetime import datetime
 from dotenv import load_dotenv
-
 from veda.core.base_agent import BaseAgent
 
 load_dotenv()
@@ -27,7 +17,6 @@ class IngestAgent(BaseAgent):
         )
 
     def _detect_source(self, path: str) -> str:
-        """Detect file type from extension."""
         ext = path.lower().split(".")[-1]
         mapping = {
             "csv": "csv",
@@ -39,11 +28,8 @@ class IngestAgent(BaseAgent):
         return mapping.get(ext, "csv")
 
     def _load_data(self, path: str) -> pd.DataFrame:
-        """Load data from file path."""
         source_type = self._detect_source(path)
-
-        self.log(f"Source type detected: {source_type}")
-
+        self.log("Source type detected: " + source_type)
         if source_type == "csv":
             df = pd.read_csv(path)
         elif source_type == "parquet":
@@ -53,43 +39,31 @@ class IngestAgent(BaseAgent):
         elif source_type == "excel":
             df = pd.read_excel(path)
         else:
-            raise ValueError(f"Unsupported file type: {source_type}")
-
+            raise ValueError("Unsupported file type: " + source_type)
         return df
 
     def _profile_data(self, df: pd.DataFrame, target_column: str = None) -> dict:
-        """Generate a lightweight data profile."""
-
-        # Basic shape
         row_count, col_count = df.shape
-
-        # Dtypes
         dtypes = {col: str(df[col].dtype) for col in df.columns}
-
-        # Null counts
         null_counts = df.isnull().sum().to_dict()
-
-        # Feature columns (everything except target)
         all_columns = list(df.columns)
+
         if target_column and target_column in all_columns:
             feature_columns = [c for c in all_columns if c != target_column]
         else:
             feature_columns = all_columns
             target_column = None
 
-        # Class balance (if target exists and is categorical)
         class_balance = None
         has_imbalance = False
         if target_column and target_column in df.columns:
             if df[target_column].dtype == "object" or df[target_column].nunique() < 20:
                 counts = df[target_column].value_counts()
                 class_balance = counts.to_dict()
-                # Flag imbalance if minority class < 20% of majority
                 if len(counts) >= 2:
                     ratio = counts.iloc[-1] / counts.iloc[0]
                     has_imbalance = ratio < 0.2
 
-        # Duplicate check
         duplicate_count = df.duplicated().sum()
 
         return {
@@ -107,20 +81,9 @@ class IngestAgent(BaseAgent):
         }
 
     def run(self, state: dict) -> dict:
-        """
-        Main ingest logic:
-        1. Load data from dataset_path
-        2. Profile it
-        3. Save profile to state
-        4. Save data to outputs folder
-        """
-
         dataset_path = state.get("dataset_path", "")
-        execution_plan = state.get("execution_plan", {})
-
-        # Get target column from goal if possible
-        # For now we ask user to include it in goal as "target: column_name"
         goal = state.get("goal", "")
+
         target_column = None
         if "target:" in goal.lower():
             try:
@@ -128,39 +91,44 @@ class IngestAgent(BaseAgent):
             except:
                 pass
 
-        self.log(f"Loading data from: {dataset_path}")
+        self.log("Loading data from: " + dataset_path)
 
-        # Step 1 — load
-        df = self._load_data(dataset_path)
-        self.log(f"Loaded {df.shape[0]} rows x {df.shape[1]} columns")
+        # Check file size
+        file_size_gb = os.path.getsize(dataset_path) / (1024 ** 3)
+        file_size_mb = os.path.getsize(dataset_path) / (1024 ** 2)
+        self.log("File size: " + str(round(file_size_mb, 1)) + " MB")
 
-        # Step 2 — profile
-        self.log("Profiling data...")
+        if file_size_gb > 0.5:
+            # Large file — load sample only
+            self.log("Large file detected — sampling 500K rows for training...")
+            df = pd.read_csv(dataset_path, nrows=500_000)
+            self.log("Sampled 500,000 rows from large dataset")
+        else:
+            df = self._load_data(dataset_path)
+
+        self.log("Loaded " + str(df.shape[0]) + " rows x " + str(df.shape[1]) + " columns")
+
         profile = self._profile_data(df, target_column)
-
-        # Step 3 — save profile to state
         state["data_profile"] = profile
 
-        # Step 4 — save clean data to outputs folder
         os.makedirs("outputs", exist_ok=True)
         run_id = state.get("run_id", datetime.now().strftime("%Y%m%d_%H%M%S"))
-        output_path = f"outputs/{run_id}_data.parquet"
+        output_path = "outputs/" + run_id + "_data.parquet"
         df.to_parquet(output_path, index=False)
-        self.log(f"Data saved to: {output_path}")
+        self.log("Data saved to: " + output_path)
 
-        # Step 5 — update state
         state["feature_list"] = profile["feature_columns"]
-        state["planner_decision_log"] = state.get("planner_decision_log", [])
-        state["planner_decision_log"].append(
-            f"[{datetime.now().isoformat()}] DataIngest: loaded {profile['row_count']} rows, "
-            f"{profile['col_count']} columns, target={profile['target_column']}"
+        state.setdefault("planner_decision_log", []).append(
+            "[" + datetime.now().isoformat() + "] DataIngest: loaded " +
+            str(profile["row_count"]) + " rows, " +
+            str(profile["col_count"]) + " columns, target=" +
+            str(profile["target_column"])
         )
 
-        # Print summary
-        self.log(f"Rows: {profile['row_count']}")
-        self.log(f"Columns: {profile['col_count']}")
-        self.log(f"Target column: {profile['target_column']}")
-        self.log(f"Null counts: {profile['null_counts']}")
-        self.log(f"Class imbalance: {profile['has_imbalance']}")
+        self.log("Rows      : " + str(profile["row_count"]))
+        self.log("Columns   : " + str(profile["col_count"]))
+        self.log("Target    : " + str(profile["target_column"]))
+        self.log("Nulls     : " + str(profile["null_counts"]))
+        self.log("Imbalance : " + str(profile["has_imbalance"]))
 
         return state

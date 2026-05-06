@@ -15,7 +15,7 @@ st.set_page_config(
 
 # ── Header ────────────────────────────────────────────────────
 st.markdown("# 🧠 VEDA — Autonomous Data Science System")
-st.markdown("**Goal:** predict whether a customer will churn. target: Churn")
+st.markdown("**Goal:** predict whether a customer review is positive or negative. target: sentiment")
 st.markdown("---")
 
 # ── Load data ─────────────────────────────────────────────────
@@ -33,7 +33,7 @@ def load_model():
 
 df = load_data()
 model = load_model()
-target_col = "Churn_Yes"
+target_col = "sentiment"
 
 # ── Tab layout ────────────────────────────────────────────────
 tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Model Performance", "Feature Insights", "Predictions"])
@@ -42,10 +42,10 @@ tab1, tab2, tab3, tab4 = st.tabs(["Overview", "Model Performance", "Feature Insi
 with tab1:
     st.markdown("## Pipeline Overview")
     col1, col2, col3, col4 = st.columns(4)
-    col1.metric("Model", "LogisticRegression")
-    col2.metric("AUC-ROC", "0.8463")
-    col3.metric("F1 Score", "0.5934")
-    col4.metric("Accuracy", "0.8045")
+    col1.metric("Model", "RandomForest")
+    col2.metric("AUC-ROC", "1.0")
+    col3.metric("F1 Score", "1.0")
+    col4.metric("Accuracy", "1.0")
 
     st.markdown("### Dataset Overview")
     col1, col2 = st.columns(2)
@@ -53,7 +53,7 @@ with tab1:
     col2.metric("Total Features", len(df.columns) - 1)
 
     st.markdown("### VEDA Explanation")
-    st.info("Our LogisticRegression model learned to predict customer churn with a good level of accuracy, achieving an AUC-ROC score of 0.8463. The top features driving these predictions are AverageMonthlyCharge, TotalSpend, ContractLength, DataUsage, and CustomerAge, which makes sense as they are all related to a customer s financial commitment and usage patterns. For instance, a high AverageMonthlyCharge may indicate a customer is more likely to churn due to cost sensitivity. In business terms, this model s performance means that we can identify approximately 80% of customers who are likely to churn, allowing for targeted retention efforts. However, the model s precision and recall scores suggest that there may be some false positives and false negatives, so further refinement and validation are necessary. Overall, this model provides a solid foundation for predicting customer churn, but its limitations should be considered when making business decisions.")
+    st.info("Our RandomForest model learned to predict customer review sentiment with perfect accuracy, indicating that it effectively identified patterns in the data. The model relies heavily on the `review_text` feature, which makes sense since the actual text of the review is the most direct indicator of its sentiment. The `helpful_votes` and `rating` features also contribute, albeit to a much lesser extent, likely because they provide indirect cues about the reviewer s opinion. In business terms, this model s perfect performance means it can accurately classify customer reviews as positive or negative, allowing companies to gauge customer satisfaction and respond accordingly. However, it s worth noting that this exceptional performance may be due to the specific dataset used, and the model may not generalize as well to new, unseen data. Additionally, the model s reliance on `review_text` may make it vulnerable to biases in the language used in the reviews.")
 
     st.markdown("### Sample Data")
     st.dataframe(df.head(10))
@@ -69,11 +69,11 @@ with tab2:
         metrics_df = pd.DataFrame({
             "Metric": ["AUC-ROC", "F1 Score", "Accuracy", "Precision", "Recall"],
             "Score": [
-                0.8463,
-                0.5934,
-                0.8045,
-                0.6621,
-                0.5377
+                1.0,
+                1.0,
+                1.0,
+                1.0,
+                1.0
             ]
         })
         fig = px.bar(metrics_df, x="Metric", y="Score",
@@ -97,8 +97,8 @@ with tab2:
 with tab3:
     st.markdown("## Feature Insights")
 
-    top_features = []
-    top_values = []
+    top_features = ['review_text', 'helpful_votes', 'rating', 'category_Home', 'category_Food', 'category_Toys', 'category_Books', 'category_Beauty']
+    top_values = [0.978628, 0.017887, 0.002036, 0.000185, 0.000174, 0.000172, 0.000161, 0.000155]
 
     fig = px.bar(
         x=top_values, y=top_features,
@@ -124,7 +124,7 @@ with tab4:
     st.markdown("## Live Predictions")
     st.markdown("Enter feature values below to get a prediction:")
 
-    feature_cols = ['tenure', 'MonthlyCharges', 'TotalCharges', 'gender_Male', 'Partner_Yes', 'Dependents_Yes', 'PhoneService_Yes', 'MultipleLines_No phone service', 'MultipleLines_Yes', 'InternetService_Fiber optic', 'InternetService_No', 'OnlineSecurity_No internet service', 'OnlineSecurity_Yes', 'OnlineBackup_No internet service', 'OnlineBackup_Yes', 'DeviceProtection_No internet service', 'DeviceProtection_Yes', 'TechSupport_No internet service', 'TechSupport_Yes', 'StreamingTV_No internet service', 'StreamingTV_Yes', 'StreamingMovies_No internet service', 'StreamingMovies_Yes', 'Contract_One year', 'Contract_Two year', 'PaperlessBilling_Yes', 'PaymentMethod_Credit card (automatic)', 'PaymentMethod_Electronic check', 'PaymentMethod_Mailed check']
+    feature_cols = ['review_text', 'rating', 'helpful_votes', 'category_Beauty', 'category_Books', 'category_Clothing', 'category_Electronics', 'category_Food', 'category_Garden', 'category_Home', 'category_Sports', 'category_Toys']
 
     input_data = {}
     cols = st.columns(3)
