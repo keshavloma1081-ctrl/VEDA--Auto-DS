@@ -223,3 +223,12 @@ mlflow.db
 *.pkl
 *.parquet
 *.db
+
+data/reviews_10m.csv
+data/churn.csv
+generate_data.py
+fix2.py
+fix_files.py
+write_readme.py
+data/*.csv
+data/*.parquet
