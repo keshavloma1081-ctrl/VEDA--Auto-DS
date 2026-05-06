@@ -58,3 +58,21 @@ print("LSTM Results:")
 print("AUC      : " + str(lstm.get("auc")))
 print("F1       : " + str(lstm.get("f1")))
 print("Params   : " + str(lstm.get("total_params")))
+
+print("\nTesting DL Trainer Agent...")
+from veda.agents.deep_learning.trainer import DLTrainerAgent
+agent4 = DLTrainerAgent()
+state = agent4.execute(state)
+
+print("\nTesting DL Evaluation Agent...")
+from veda.agents.deep_learning.dl_evaluation import DLEvaluationAgent
+agent5 = DLEvaluationAgent()
+state = agent5.execute(state)
+
+print("\n" + "="*50)
+print("DEEP LEARNING PIPELINE COMPLETE")
+print("="*50)
+dl_eval = state.get("dl_evaluation", {})
+print("Best DL model : " + str(dl_eval.get("best_model")))
+print("Best AUC      : " + str(dl_eval.get("best_auc")))
+print("Interpretation: " + str(dl_eval.get("interpretation", ""))[:200])
