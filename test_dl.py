@@ -1,0 +1,38 @@
+"""Test MLP Agent on Titanic dataset"""
+import os
+import pandas as pd
+from datetime import datetime
+
+run_id = datetime.now().strftime("%Y%m%d_%H%M%S")
+
+# Load features from previous VEDA run
+d = "outputs"
+files = [f for f in os.listdir(d) if f.endswith("_features.parquet")]
+if not files:
+    print("No features found — run main.py first")
+    exit()
+
+df = pd.read_parquet(os.path.join(d, sorted(files)[-1]))
+print("Loaded features: " + str(df.shape))
+
+# Save as current run
+df.to_parquet("outputs/" + run_id + "_features.parquet", index=False)
+
+state = {
+    "run_id": run_id,
+    "goal": "predict survival. target: Survived",
+    "data_profile": {"target_column": df.columns[-1]},
+    "planner_decision_log": []
+}
+
+print("\nTesting MLP Agent...")
+from veda.agents.deep_learning.mlp import MLPAgent
+agent = MLPAgent()
+state = agent.execute(state)
+
+print("\nResults:")
+results = state.get("dl_results", {})
+print("AUC      : " + str(results.get("auc")))
+print("F1       : " + str(results.get("f1")))
+print("Accuracy : " + str(results.get("accuracy")))
+print("Params   : " + str(results.get("total_params")))
