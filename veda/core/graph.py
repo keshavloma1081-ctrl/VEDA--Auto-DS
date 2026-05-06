@@ -11,6 +11,7 @@ def build_veda_graph():
     from veda.agents.core_pipeline.model_selection import ModelSelectionAgent
     from veda.agents.core_pipeline.training import TrainingAgent
     from veda.agents.core_pipeline.evaluation import EvaluationAgent
+    from veda.agents.core_pipeline.explainability import ExplainabilityAgent
     planner = PlannerAgent()
     ingest = IngestAgent()
     eda = EDAAgent()
@@ -19,6 +20,7 @@ def build_veda_graph():
     model_sel = ModelSelectionAgent()
     training = TrainingAgent()
     evaluation = EvaluationAgent()
+    explainability = ExplainabilityAgent()
     graph.add_node("planner", planner.execute)
     graph.add_node("ingest", ingest.execute)
     graph.add_node("eda", eda.execute)
@@ -27,6 +29,7 @@ def build_veda_graph():
     graph.add_node("model_selection", model_sel.execute)
     graph.add_node("training", training.execute)
     graph.add_node("evaluation", evaluation.execute)
+    graph.add_node("explainability", explainability.execute)
     graph.set_entry_point("planner")
     graph.add_edge("planner", "ingest")
     graph.add_edge("ingest", "eda")
@@ -35,7 +38,8 @@ def build_veda_graph():
     graph.add_edge("feature_engineering", "model_selection")
     graph.add_edge("model_selection", "training")
     graph.add_edge("training", "evaluation")
-    graph.add_edge("evaluation", END)
+    graph.add_edge("evaluation", "explainability")
+    graph.add_edge("explainability", END)
     memory = MemorySaver()
     return graph.compile(checkpointer=memory)
 
@@ -52,7 +56,7 @@ def run_veda(goal, dataset_path):
         "cleaning_diff": [], "feature_list": [],
         "agent_health_registry": {}, "pipeline_complete": False,
         "pipeline_failed": False, "human_review_required": False,
-        "model_info": {},
+        "model_info": {}, "explainability": {},
         "guard_status": {"output_validation_passed": False,
             "fact_grounding_passed": False, "self_critique_passed": False,
             "metric_consistency_passed": False, "hallucination_count": 0,
