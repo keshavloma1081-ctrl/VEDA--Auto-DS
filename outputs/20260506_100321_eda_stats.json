@@ -1,0 +1,131 @@
+{
+  "numeric_summary": {
+    "PassengerId": {
+      "mean": 446.0,
+      "median": 446.0,
+      "std": 257.3538,
+      "min": 1.0,
+      "max": 891.0,
+      "null_pct": 0.0
+    },
+    "Survived": {
+      "mean": 0.3838,
+      "median": 0.0,
+      "std": 0.4866,
+      "min": 0.0,
+      "max": 1.0,
+      "null_pct": 0.0
+    },
+    "Pclass": {
+      "mean": 2.3086,
+      "median": 3.0,
+      "std": 0.8361,
+      "min": 1.0,
+      "max": 3.0,
+      "null_pct": 0.0
+    },
+    "Age": {
+      "mean": 29.6991,
+      "median": 28.0,
+      "std": 14.5265,
+      "min": 0.42,
+      "max": 80.0,
+      "null_pct": 19.87
+    },
+    "SibSp": {
+      "mean": 0.523,
+      "median": 0.0,
+      "std": 1.1027,
+      "min": 0.0,
+      "max": 8.0,
+      "null_pct": 0.0
+    },
+    "Parch": {
+      "mean": 0.3816,
+      "median": 0.0,
+      "std": 0.8061,
+      "min": 0.0,
+      "max": 6.0,
+      "null_pct": 0.0
+    },
+    "Fare": {
+      "mean": 32.2042,
+      "median": 14.4542,
+      "std": 49.6934,
+      "min": 0.0,
+      "max": 512.3292,
+      "null_pct": 0.0
+    }
+  },
+  "categorical_summary": {
+    "Name": {
+      "unique_count": 891,
+      "null_pct": 0.0,
+      "top_values": {
+        "Braund, Mr. Owen Harris": 1,
+        "Cumings, Mrs. John Bradley (Florence Briggs Thayer)": 1,
+        "Heikkinen, Miss. Laina": 1,
+        "Futrelle, Mrs. Jacques Heath (Lily May Peel)": 1,
+        "Allen, Mr. William Henry": 1
+      }
+    },
+    "Sex": {
+      "unique_count": 2,
+      "null_pct": 0.0,
+      "top_values": {
+        "male": 577,
+        "female": 314
+      }
+    },
+    "Ticket": {
+      "unique_count": 681,
+      "null_pct": 0.0,
+      "top_values": {
+        "347082": 7,
+        "1601": 7,
+        "CA. 2343": 7,
+        "3101295": 6,
+        "CA 2144": 6
+      }
+    },
+    "Cabin": {
+      "unique_count": 147,
+      "null_pct": 77.1,
+      "top_values": {
+        "G6": 4,
+        "C23 C25 C27": 4,
+        "B96 B98": 4,
+        "F2": 3,
+        "D": 3
+      }
+    },
+    "Embarked": {
+      "unique_count": 3,
+      "null_pct": 0.22,
+      "top_values": {
+        "S": 644,
+        "C": 168,
+        "Q": 77
+      }
+    }
+  },
+  "top_correlations": {
+    "Pclass vs Fare": 0.5495,
+    "SibSp vs Parch": 0.4148,
+    "Pclass vs Age": 0.3692,
+    "Survived vs Pclass": 0.3385,
+    "Age vs SibSp": 0.3082,
+    "Survived vs Fare": 0.2573,
+    "Parch vs Fare": 0.2162,
+    "Age vs Parch": 0.1891,
+    "SibSp vs Fare": 0.1597,
+    "Age vs Fare": 0.0961
+  },
+  "outlier_flags": {
+    "Age": 11,
+    "SibSp": 46,
+    "Parch": 213,
+    "Fare": 116
+  },
+  "low_variance_cols": []
+}
