@@ -36,3 +36,25 @@ print("AUC      : " + str(results.get("auc")))
 print("F1       : " + str(results.get("f1")))
 print("Accuracy : " + str(results.get("accuracy")))
 print("Params   : " + str(results.get("total_params")))
+
+print("\nTesting CNN Agent...")
+from veda.agents.deep_learning.cnn import CNNAgent
+agent2 = CNNAgent()
+state = agent2.execute(state)
+
+cnn = state.get("dl_results", {}).get("cnn", {})
+print("CNN Results:")
+print("AUC      : " + str(cnn.get("auc")))
+print("F1       : " + str(cnn.get("f1")))
+print("Params   : " + str(cnn.get("total_params")))
+
+print("\nTesting LSTM Agent...")
+from veda.agents.deep_learning.lstm import LSTMAgent
+agent3 = LSTMAgent()
+state = agent3.execute(state)
+
+lstm = state.get("dl_results", {}).get("lstm", {})
+print("LSTM Results:")
+print("AUC      : " + str(lstm.get("auc")))
+print("F1       : " + str(lstm.get("f1")))
+print("Params   : " + str(lstm.get("total_params")))
