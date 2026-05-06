@@ -8,22 +8,26 @@ def build_veda_graph():
     from veda.agents.core_pipeline.eda import EDAAgent
     from veda.agents.core_pipeline.cleaning import CleaningAgent
     from veda.agents.core_pipeline.feature_engineering import FeatureEngineeringAgent
+    from veda.agents.core_pipeline.model_selection import ModelSelectionAgent
     planner = PlannerAgent()
     ingest = IngestAgent()
     eda = EDAAgent()
     cleaning = CleaningAgent()
     features = FeatureEngineeringAgent()
+    model_sel = ModelSelectionAgent()
     graph.add_node("planner", planner.execute)
     graph.add_node("ingest", ingest.execute)
     graph.add_node("eda", eda.execute)
     graph.add_node("cleaning", cleaning.execute)
     graph.add_node("feature_engineering", features.execute)
+    graph.add_node("model_selection", model_sel.execute)
     graph.set_entry_point("planner")
     graph.add_edge("planner", "ingest")
     graph.add_edge("ingest", "eda")
     graph.add_edge("eda", "cleaning")
     graph.add_edge("cleaning", "feature_engineering")
-    graph.add_edge("feature_engineering", END)
+    graph.add_edge("feature_engineering", "model_selection")
+    graph.add_edge("model_selection", END)
     memory = MemorySaver()
     return graph.compile(checkpointer=memory)
 
@@ -31,8 +35,8 @@ def run_veda(goal, dataset_path):
     print("\n==================================================")
     print("  VEDA - Autonomous Data Science System")
     print("==================================================")
-    print(f"  Goal    : {goal}")
-    print(f"  Dataset : {dataset_path}")
+    print("  Goal    : " + goal)
+    print("  Dataset : " + dataset_path)
     print("==================================================\n")
     initial_state = {
         "goal": goal, "dataset_path": dataset_path,
@@ -40,6 +44,7 @@ def run_veda(goal, dataset_path):
         "cleaning_diff": [], "feature_list": [],
         "agent_health_registry": {}, "pipeline_complete": False,
         "pipeline_failed": False, "human_review_required": False,
+        "model_info": {},
         "guard_status": {"output_validation_passed": False,
             "fact_grounding_passed": False, "self_critique_passed": False,
             "metric_consistency_passed": False, "hallucination_count": 0,
