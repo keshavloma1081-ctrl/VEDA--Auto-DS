@@ -12,6 +12,7 @@ def build_veda_graph():
     from veda.agents.core_pipeline.training import TrainingAgent
     from veda.agents.core_pipeline.evaluation import EvaluationAgent
     from veda.agents.core_pipeline.explainability import ExplainabilityAgent
+    from veda.agents.dashboards.dashboard import DashboardAgent
     planner = PlannerAgent()
     ingest = IngestAgent()
     eda = EDAAgent()
@@ -21,6 +22,7 @@ def build_veda_graph():
     training = TrainingAgent()
     evaluation = EvaluationAgent()
     explainability = ExplainabilityAgent()
+    dashboard = DashboardAgent()
     graph.add_node("planner", planner.execute)
     graph.add_node("ingest", ingest.execute)
     graph.add_node("eda", eda.execute)
@@ -30,6 +32,7 @@ def build_veda_graph():
     graph.add_node("training", training.execute)
     graph.add_node("evaluation", evaluation.execute)
     graph.add_node("explainability", explainability.execute)
+    graph.add_node("dashboard", dashboard.execute)
     graph.set_entry_point("planner")
     graph.add_edge("planner", "ingest")
     graph.add_edge("ingest", "eda")
@@ -39,7 +42,8 @@ def build_veda_graph():
     graph.add_edge("model_selection", "training")
     graph.add_edge("training", "evaluation")
     graph.add_edge("evaluation", "explainability")
-    graph.add_edge("explainability", END)
+    graph.add_edge("explainability", "dashboard")
+    graph.add_edge("dashboard", END)
     memory = MemorySaver()
     return graph.compile(checkpointer=memory)
 

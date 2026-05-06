@@ -1,48 +1,4 @@
-import os
-import json
-import joblib
-import pandas as pd
-
-# Load the current state to get explanation
-outputs_dir = "outputs"
-
-# Find explainability file
-exp_files = [f for f in os.listdir(outputs_dir) if f.endswith("_explainability.json")]
-if exp_files:
-    with open(os.path.join(outputs_dir, sorted(exp_files)[-1])) as f:
-        exp_data = json.load(f)
-    explanation = exp_data.get("explanation_text", "No explanation available.")
-    feature_importance = exp_data.get("feature_importance", {})
-else:
-    explanation = "VEDA autonomous pipeline complete."
-    feature_importance = {}
-
-# Find eval file
-eval_files = [f for f in os.listdir(outputs_dir) if f.endswith("_evaluation.json")]
-if eval_files:
-    with open(os.path.join(outputs_dir, sorted(eval_files)[-1])) as f:
-        eval_data = json.load(f)
-else:
-    eval_data = {}
-
-# Clean explanation — remove apostrophes and quotes
-explanation_clean = explanation.replace("'", "").replace('"', "").replace("\n", " ")
-
-top_features = list(feature_importance.keys())[:8]
-top_values = [feature_importance[f] for f in top_features]
-
-auc = eval_data.get("auc_roc", 0)
-f1 = eval_data.get("f1_score", 0)
-acc = eval_data.get("accuracy", 0)
-prec = eval_data.get("precision", 0)
-rec = eval_data.get("recall", 0)
-
-# Load feature names
-feat_files = [f for f in os.listdir(outputs_dir) if f.endswith("_features.parquet")]
-df = pd.read_parquet(os.path.join(outputs_dir, sorted(feat_files)[-1]))
-feature_cols = list(df.columns[:-1])
-
-dashboard_code = """import streamlit as st
+import streamlit as st
 import pandas as pd
 import numpy as np
 import joblib
@@ -76,11 +32,11 @@ with tab1:
     st.markdown("## Pipeline Overview")
     c1, c2, c3, c4 = st.columns(4)
     c1.metric("Model", "LightGBM")
-    c2.metric("AUC-ROC", \"""" + str(auc) + """\")
-    c3.metric("F1 Score", \"""" + str(f1) + """\")
-    c4.metric("Accuracy", \"""" + str(acc) + """\")
+    c2.metric("AUC-ROC", "1.0")
+    c3.metric("F1 Score", "0.9992")
+    c4.metric("Accuracy", "0.9989")
     st.markdown("### VEDA Analysis")
-    st.info(\"""" + explanation_clean + """\")
+    st.info("Our LightGBM model learned to predict with high accuracy whether a passenger survived the Titanic, with a nearly perfect accuracy of 99.89%. The model relies heavily on features like Ticket, Embarked_Q (the port of embarkation), and Fare to make predictions, which makes sense because these factors could be related to a passengers social status, access to resources, and priority during emergency situations. The high importance of Ticket suggests that the model may have identified specific ticket patterns or groups that were more likely to survive. In business terms, this models performance means that it can reliably identify survivors with a high degree of precision, which could be useful for historical analysis or insurance claims. However, its worth noting that the models exceptional performance may be due to overfitting, and its generalizability to other datasets or scenarios should be carefully evaluated.")
     st.markdown("### Sample Data")
     st.dataframe(df.head(10))
 
@@ -88,7 +44,7 @@ with tab2:
     st.markdown("## Model Performance")
     metrics_df = pd.DataFrame({
         "Metric": ["AUC-ROC", "F1 Score", "Accuracy", "Precision", "Recall"],
-        "Score": [""" + str(auc) + """, """ + str(f1) + """, """ + str(acc) + """, """ + str(prec) + """, """ + str(rec) + """]
+        "Score": [1.0, 0.9992, 0.9989, 1.0, 0.9985]
     })
     fig = px.bar(metrics_df, x="Metric", y="Score", color="Score",
                  color_continuous_scale="Greens", title="Model Metrics")
@@ -102,8 +58,8 @@ with tab2:
 
 with tab3:
     st.markdown("## Feature Insights")
-    top_features = """ + str(top_features) + """
-    top_values = """ + str(top_values) + """
+    top_features = ['Ticket', 'Embarked_Q', 'Fare', 'Pclass', 'Age', 'Survived', 'SibSp', 'Sex_male']
+    top_values = [2.735392, 1.374411, 1.016956, 0.556628, 0.526787, 0.222168, 0.101386, 0.026089]
     fig = px.bar(x=top_values, y=top_features, orientation="h",
                  title="Feature Importance", color=top_values,
                  color_continuous_scale="Blues")
@@ -112,7 +68,7 @@ with tab3:
 
 with tab4:
     st.markdown("## Live Predictions")
-    feature_cols = """ + str(feature_cols) + """
+    feature_cols = ['Survived', 'Pclass', 'Age', 'SibSp', 'Ticket', 'Fare', 'Sex_male', 'Embarked_Q']
     input_data = {}
     cols = st.columns(3)
     for i, col in enumerate(feature_cols):
@@ -133,8 +89,3 @@ with tab4:
     results_df["predicted"] = model.predict(X)
     results_df["probability"] = model.predict_proba(X)[:, 1].round(4)
     st.dataframe(results_df.head(50))
-"""
-
-with open("outputs/veda_dashboard.py", "w", encoding="utf-8") as f:
-    f.write(dashboard_code)
-print("Dashboard fixed and saved!")
