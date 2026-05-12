@@ -1,0 +1,30 @@
+﻿QUARTERLY SALES REPORT
+Q4 2025 Performance Analysis
+
+Executive Summary
+Total Revenue: $2.4M
+Growth Rate: 18% YoY
+Top Product: Widget Pro X
+
+Regional Performance
+
+| Region        | Revenue   | Growth | Market Share |
+|--------------|-----------|--------|--------------|
+| North America| $1.2M     | 22%    | 45%          |
+| Europe       | $800K     | 15%    | 30%          |
+| Asia Pacific | $400K     | 12%    | 25%          |
+
+Key Insights:
+- North America remains strongest market
+- European growth accelerating
+- Asia Pacific shows steady expansion
+
+Recommendations:
+1. Increase marketing spend in Europe
+2. Launch new product line in Q1 2026
+3. Expand sales team in APAC region
+
+Document Metadata:
+Author: Jane Smith
+Created: December 31, 2025
+Pages: 1
