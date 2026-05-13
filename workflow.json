@@ -1,0 +1,4 @@
+﻿{
+  "dataset_path": "test_data/sample.csv",
+  "goal": "predict customer churn"
+}
