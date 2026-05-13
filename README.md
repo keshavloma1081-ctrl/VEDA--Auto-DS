@@ -1,3 +1,15 @@
+---
+title: VEDA - Autonomous ML Platform
+emoji: 🤖
+colorFrom: blue
+colorTo: purple
+sdk: docker
+app_file: Dockerfile.hf
+app_port: 7860
+pinned: false
+license: mit
+---
+
 # 🧠 VEDA - Versatile Enterprise Data Automation
 
 > **128 AI agents. 23 specialized domains. One autonomous ML system.**
