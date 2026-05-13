@@ -1,0 +1,32 @@
+# VEDA Advanced Features Requirements
+
+# Database
+asyncpg>=0.29.0           # PostgreSQL async driver
+psycopg2-binary>=2.9.9    # PostgreSQL sync driver
+alembic>=1.13.0           # Database migrations
+
+# Caching
+redis>=5.0.0              # Redis cache
+hiredis>=2.3.0            # Redis performance boost
+
+# WebSockets
+websockets>=12.0          # WebSocket support
+
+# Task Queue
+celery>=5.3.0             # Distributed task queue
+flower>=2.0.0             # Celery monitoring
+
+# Monitoring & Observability
+prometheus-client>=0.19.0 # Metrics
+sentry-sdk>=1.40.0        # Error tracking
+
+# Rate Limiting
+slowapi>=0.1.9            # Rate limiting for FastAPI
+
+# Advanced ML
+mlflow-skinny>=2.10.0     # Lightweight MLflow
+optuna>=3.5.0             # Hyperparameter optimization
+
+# Security
+python-jose[cryptography]>=3.3.0  # JWT with crypto
+passlib[bcrypt]>=1.7.4    # Password hashing
