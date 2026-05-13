@@ -10,6 +10,13 @@ pinned: false
 license: mit
 ---
 
+
+[![Live Demo](https://img.shields.io/badge/🔮_Live_Demo-HuggingFace-yellow?style=for-the-badge)](https://keshav1838-veda-ml-platform.hf.space)
+[![API Docs](https://img.shields.io/badge/API-Docs-blue?style=for-the-badge)](https://keshav1838-veda-ml-platform.hf.space/docs)
+[![HuggingFace](https://img.shields.io/badge/🤗_Space-Keshav1838-orange?style=for-the-badge)](https://huggingface.co/spaces/Keshav1838/Veda-ml-platform)
+[![Status](https://img.shields.io/badge/Status-Live_✅-brightgreen?style=for-the-badge)](https://keshav1838-veda-ml-platform.hf.space/health)
+
+
 # 🧠 VEDA - Versatile Enterprise Data Automation
 
 > **128 AI agents. 23 specialized domains. One autonomous ML system.**
