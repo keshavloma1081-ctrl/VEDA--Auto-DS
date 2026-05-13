@@ -1,0 +1,53 @@
+version: '3.8'
+
+services:
+  veda:
+    build: .
+    container_name: veda-app
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./data:/app/data
+      - ./outputs:/app/outputs
+      - ./mlruns:/app/mlruns
+      - ./logs:/app/logs
+    environment:
+      - GROQ_API_KEY=${GROQ_API_KEY}
+      - MLFLOW_TRACKING_URI=http://mlflow:5000
+      - DATABASE_URL=postgresql://veda:veda123@postgres:5432/veda_db
+    depends_on:
+      - postgres
+      - mlflow
+    restart: unless-stopped
+
+  postgres:
+    image: postgres:15-alpine
+    container_name: veda-postgres
+    ports:
+      - "5432:5432"
+    environment:
+      - POSTGRES_USER=veda
+      - POSTGRES_PASSWORD=veda123
+      - POSTGRES_DB=veda_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
+
+  mlflow:
+    image: ghcr.io/mlflow/mlflow:v2.9.2
+    container_name: veda-mlflow
+    ports:
+      - "5000:5000"
+    environment:
+      - BACKEND_STORE_URI=postgresql://veda:veda123@postgres:5432/veda_db
+      - DEFAULT_ARTIFACT_ROOT=/mlflow/artifacts
+    volumes:
+      - mlflow_artifacts:/mlflow/artifacts
+    command: mlflow server --backend-store-uri postgresql://veda:veda123@postgres:5432/veda_db --default-artifact-root /mlflow/artifacts --host 0.0.0.0 --port 5000
+    depends_on:
+      - postgres
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+  mlflow_artifacts:
