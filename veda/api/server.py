@@ -1,9 +1,9 @@
 """
-VEDA FastAPI Server - Complete Production Version
+VEDA FastAPI Server - Complete Production Version with Report Generation
 """
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.security import HTTPBearer
+from fastapi.responses import FileResponse
 from sqlalchemy.orm import Session
 from pydantic import BaseModel
 from datetime import datetime, timedelta
@@ -14,6 +14,13 @@ import uuid
 from veda.database.models import Workflow, get_db, init_db
 from veda.agents.core_pipeline.planner import PlannerAgent
 from veda.core.state import VEDAState
+
+# Report generator
+try:
+    from veda.reports.generator import generate_workflow_report
+    REPORTS_AVAILABLE = True
+except ImportError:
+    REPORTS_AVAILABLE = False
 
 # Auth imports
 try:
@@ -87,7 +94,8 @@ def root():
         "version": "2.0.0",
         "status": "operational",
         "docs": "/docs",
-        "authentication": "JWT (POST /auth/login)" if AUTH_AVAILABLE else "disabled"
+        "authentication": "JWT (POST /auth/login)" if AUTH_AVAILABLE else "disabled",
+        "reports": "enabled" if REPORTS_AVAILABLE else "disabled"
     }
 
 @app.get("/health")
@@ -106,7 +114,8 @@ def health(db: Session = Depends(get_db)):
             "api": "operational",
             "database": db_status,
             "groq_api_key": "configured" if os.getenv("GROQ_API_KEY") else "missing",
-            "auth": "enabled" if AUTH_AVAILABLE else "disabled"
+            "auth": "enabled" if AUTH_AVAILABLE else "disabled",
+            "reports": "enabled" if REPORTS_AVAILABLE else "disabled"
         }
     }
 
@@ -223,3 +232,51 @@ def stats(db: Session = Depends(get_db)):
             "success_rate": (completed/total*100) if total > 0 else 0
         }
     }
+
+# ============================================================================
+# REPORT ENDPOINT
+# ============================================================================
+
+if REPORTS_AVAILABLE:
+    @app.get("/workflows/{job_id}/report")
+    def generate_report(job_id: str, db: Session = Depends(get_db)):
+        """
+        Generate HTML report for workflow
+        
+        Returns a professional HTML report with:
+        - Workflow summary
+        - Performance metrics
+        - Model information
+        - Visualizations
+        - Recommendations
+        """
+        workflow = db.query(Workflow).filter(Workflow.job_id == job_id).first()
+        
+        if not workflow:
+            raise HTTPException(404, "Workflow not found")
+        
+        # Generate report
+        try:
+            report_path = generate_workflow_report(workflow.to_dict())
+            
+            # Return HTML file
+            return FileResponse(
+                report_path,
+                media_type="text/html",
+                filename=f"veda_report_{job_id}.html"
+            )
+        except Exception as e:
+            raise HTTPException(500, f"Failed to generate report: {str(e)}")
+
+# ============================================================================
+# RUN SERVER
+# ============================================================================
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(
+        "veda.api.server:app",
+        host="0.0.0.0",
+        port=8000,
+        reload=True
+    )
