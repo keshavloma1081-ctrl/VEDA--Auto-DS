@@ -15,6 +15,22 @@ from veda.database.models import Workflow, get_db, init_db
 from veda.agents.core_pipeline.planner import PlannerAgent
 from veda.core.state import VEDAState
 
+
+# Check Celery availability
+try:
+    from veda.tasks.celery_app import celery_app
+    from veda.tasks.workflow_tasks import (
+        run_workflow_task,
+        run_workflow_priority,
+        cancel_workflow_task
+    )
+    celery_app.control.ping(timeout=1)
+    CELERY_AVAILABLE = True
+    print("✅ Celery+Redis connected")
+except Exception:
+    CELERY_AVAILABLE = False
+    print("⚠️  Using BackgroundTasks fallback")
+
 # Report generator
 try:
     from veda.reports.generator import generate_workflow_report
