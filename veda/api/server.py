@@ -536,3 +536,28 @@ def compare_datasets(version_id_a: str, version_id_b: str):
         return dvc.compare(version_id_a, version_id_b)
     except Exception as e:
         return {"error": str(e)}
+
+
+# ── Observability Endpoints (Fix #10) ────────────────────────────────────────
+
+@app.get("/metrics")
+def get_metrics(format: Optional[str] = "json"):
+    """Get Prometheus-compatible metrics"""
+    try:
+        from veda.core.observability import metrics
+        if format == "prometheus":
+            from fastapi.responses import PlainTextResponse
+            return PlainTextResponse(metrics.to_prometheus_format())
+        return metrics.get_all_metrics()
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/observability")
+def observability_status():
+    """Full observability status"""
+    try:
+        from veda.core.observability import get_observability_status
+        return get_observability_status()
+    except Exception as e:
+        return {"error": str(e)}
+
