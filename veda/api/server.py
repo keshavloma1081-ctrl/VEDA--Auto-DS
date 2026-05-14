@@ -398,3 +398,84 @@ def optimization_summary(job_id: str, db: Session = Depends(get_db)):
             "optimization_time": opt_summary.get("total_optimization_time")
         }
     return {"job_id": job_id, "message": "No optimization data available"}
+
+
+# ── A/B Testing Endpoints (Fix #8) ───────────────────────────────────────────
+
+class ABExperimentRequest(BaseModel):
+    name: str
+    model_a_id: str
+    model_b_id: str
+    traffic_split: float = 0.5
+
+class ABOutcomeRequest(BaseModel):
+    experiment_id: str
+    variant: str
+    correct: bool
+    latency_ms: float = 0.0
+
+@app.post("/ab-tests")
+def create_ab_test(req: ABExperimentRequest):
+    """Create new A/B experiment to compare two models"""
+    try:
+        from veda.agents.ab_testing.framework import ab_framework
+        exp = ab_framework.create_experiment(
+            name=req.name,
+            model_a_id=req.model_a_id,
+            model_b_id=req.model_b_id,
+            traffic_split=req.traffic_split
+        )
+        return exp.to_dict()
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/ab-tests")
+def list_ab_tests(status: Optional[str] = None):
+    """List all A/B experiments"""
+    try:
+        from veda.agents.ab_testing.framework import ab_framework
+        return {"experiments": ab_framework.list_experiments(status), "summary": ab_framework.get_summary()}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/ab-tests/{experiment_id}")
+def get_ab_test(experiment_id: str):
+    """Get A/B experiment details and current results"""
+    try:
+        from veda.agents.ab_testing.framework import ab_framework
+        exp = ab_framework.get_experiment(experiment_id)
+        if not exp:
+            raise HTTPException(404, "Experiment not found")
+        return exp
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/ab-tests/{experiment_id}/analyze")
+def analyze_ab_test(experiment_id: str):
+    """Run statistical significance test on experiment"""
+    try:
+        from veda.agents.ab_testing.framework import ab_framework
+        return ab_framework.analyze(experiment_id)
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/ab-tests/{experiment_id}/stop")
+def stop_ab_test(experiment_id: str, deploy_winner: bool = False):
+    """Stop experiment and optionally deploy winner"""
+    try:
+        from veda.agents.ab_testing.framework import ab_framework
+        return ab_framework.stop_experiment(experiment_id, deploy_winner)
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/ab-tests/outcome")
+def record_ab_outcome(req: ABOutcomeRequest):
+    """Record prediction outcome for A/B tracking"""
+    try:
+        from veda.agents.ab_testing.framework import ab_framework
+        ab_framework.record_outcome(req.experiment_id, req.variant, req.correct, req.latency_ms)
+        return {"message": "Outcome recorded"}
+    except Exception as e:
+        return {"error": str(e)}
