@@ -15,6 +15,12 @@ from veda.database.models import Workflow, get_db, init_db
 from veda.agents.core_pipeline.planner import PlannerAgent
 from veda.core.state import VEDAState
 
+from veda.api.security import (
+    validate_dataset_path, validate_goal,
+    save_upload_file, SecureWorkflowRequest,
+    SecureLoginRequest, SecurityMiddleware,
+    ensure_allowed_dirs, get_file_info
+)
 
 # Check Celery availability
 try:
