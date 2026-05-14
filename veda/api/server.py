@@ -341,3 +341,41 @@ def reset_circuits():
         return {"message": "All circuits reset to CLOSED"}
     except ImportError:
         return {"message": "Circuit breaker not configured"}
+
+
+@app.get("/monitoring/health")
+def monitoring_health():
+    """Get health status of all monitored models"""
+    try:
+        from veda.monitors.drift_detector import monitoring_service
+        return {"models": monitoring_service.get_all_health()}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/monitoring/{model_id}")
+def model_monitoring(model_id: str):
+    """Get drift report for specific model"""
+    try:
+        from veda.monitors.drift_detector import monitoring_service
+        return monitoring_service.get_model_health(model_id)
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.post("/monitoring/{model_id}/check")
+def trigger_drift_check(model_id: str, db: Session = Depends(get_db)):
+    """Manually trigger drift check for a model"""
+    try:
+        from veda.monitors.drift_detector import monitoring_service
+        from veda.database.models import Prediction
+        preds = db.query(Prediction).filter(
+            Prediction.model_id == model_id
+        ).order_by(Prediction.created_at.desc()).limit(500).all()
+        if not preds:
+            return {"message": f"No predictions found for model {model_id}"}
+        pred_values = [p.predictions[0] if isinstance(p.predictions, list) else 0 for p in preds]
+        report = monitoring_service.check_model(model_id=model_id, recent_predictions=pred_values)
+        if report:
+            return report.to_dict()
+        return {"message": f"Model {model_id} not registered for monitoring"}
+    except Exception as e:
+        return {"error": str(e)}
