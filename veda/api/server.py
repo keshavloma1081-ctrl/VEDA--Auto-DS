@@ -379,3 +379,22 @@ def trigger_drift_check(model_id: str, db: Session = Depends(get_db)):
         return {"message": f"Model {model_id} not registered for monitoring"}
     except Exception as e:
         return {"error": str(e)}
+
+
+@app.get("/optimization/summary/{job_id}")
+def optimization_summary(job_id: str, db: Session = Depends(get_db)):
+    """Get hyperparameter optimization summary for a workflow"""
+    w = db.query(Workflow).filter(Workflow.job_id == job_id).first()
+    if not w:
+        raise HTTPException(404, "Workflow not found")
+    result = w.to_dict()
+    opt_summary = result.get("result", {})
+    if isinstance(opt_summary, dict):
+        return {
+            "job_id": job_id,
+            "best_model": opt_summary.get("best_model"),
+            "best_score": opt_summary.get("best_score"),
+            "best_params": opt_summary.get("best_params"),
+            "optimization_time": opt_summary.get("total_optimization_time")
+        }
+    return {"job_id": job_id, "message": "No optimization data available"}
