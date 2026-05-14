@@ -1,4 +1,4 @@
-"""
+﻿"""
 VEDA FastAPI Server - Complete Production Version with Report Generation
 """
 from fastapi import FastAPI, HTTPException, BackgroundTasks, Depends, status
@@ -32,10 +32,10 @@ try:
     )
     celery_app.control.ping(timeout=1)
     CELERY_AVAILABLE = True
-    print("✅ Celery+Redis connected")
+    print("âœ… Celery+Redis connected")
 except Exception:
     CELERY_AVAILABLE = False
-    print("⚠️  Using BackgroundTasks fallback")
+    print("âš ï¸  Using BackgroundTasks fallback")
 
 # Report generator
 try:
@@ -71,8 +71,8 @@ app.add_middleware(
 @app.on_event("startup")
 def startup():
     init_db()
-    print("✅ Database initialized")
-    print("🚀 VEDA API Started")
+    print("âœ… Database initialized")
+    print("ðŸš€ VEDA API Started")
 
 # Planner
 planner = None
@@ -302,3 +302,22 @@ if __name__ == "__main__":
         port=8000,
         reload=True
     )
+
+@app.get("/circuits/health")
+def circuit_health():
+    """Get circuit breaker health for all agents"""
+    try:
+        from veda.agents.circuit_breaker import get_circuit_health
+        return get_circuit_health()
+    except ImportError:
+        return {"message": "Circuit breaker not configured"}
+
+@app.post("/circuits/reset")
+def reset_circuits():
+    """Manually reset all circuit breakers to CLOSED"""
+    try:
+        from veda.agents.circuit_breaker import circuit_registry
+        circuit_registry.reset_all()
+        return {"message": "All circuits reset to CLOSED"}
+    except ImportError:
+        return {"message": "Circuit breaker not configured"}
