@@ -479,3 +479,60 @@ def record_ab_outcome(req: ABOutcomeRequest):
         return {"message": "Outcome recorded"}
     except Exception as e:
         return {"error": str(e)}
+
+
+class RegisterDatasetRequest(BaseModel):
+    file_path: str
+    tags: Optional[List[str]] = []
+    notes: Optional[str] = ""
+    workflow_id: Optional[str] = None
+
+@app.post("/datasets/register")
+def register_dataset(req: RegisterDatasetRequest):
+    try:
+        from veda.data_versioning.dvc import dvc
+        version = dvc.register(file_path=req.file_path, tags=req.tags, notes=req.notes, workflow_id=req.workflow_id)
+        return version.to_dict()
+    except FileNotFoundError as e:
+        raise HTTPException(404, str(e))
+    except Exception as e:
+        raise HTTPException(500, str(e))
+
+@app.get("/datasets")
+def list_datasets(tag: Optional[str] = None, limit: int = 20):
+    try:
+        from veda.data_versioning.dvc import dvc
+        versions = dvc.list_versions(tag=tag, limit=limit)
+        return {"total": len(versions), "stats": dvc.get_stats(), "versions": [v.to_dict() for v in versions]}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/datasets/{version_id}")
+def get_dataset(version_id: str):
+    try:
+        from veda.data_versioning.dvc import dvc
+        version = dvc.get(version_id)
+        if not version:
+            raise HTTPException(404, f"Version {version_id} not found")
+        return version.to_dict()
+    except HTTPException:
+        raise
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/datasets/{version_id}/lineage")
+def get_dataset_lineage(version_id: str):
+    try:
+        from veda.data_versioning.dvc import dvc
+        lineage = dvc.get_lineage(version_id)
+        return {"version_id": version_id, "lineage": lineage, "depth": len(lineage)}
+    except Exception as e:
+        return {"error": str(e)}
+
+@app.get("/datasets/compare/{version_id_a}/{version_id_b}")
+def compare_datasets(version_id_a: str, version_id_b: str):
+    try:
+        from veda.data_versioning.dvc import dvc
+        return dvc.compare(version_id_a, version_id_b)
+    except Exception as e:
+        return {"error": str(e)}
