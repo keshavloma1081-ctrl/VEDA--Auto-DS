@@ -321,3 +321,23 @@ def reset_circuits():
         return {"message": "All circuits reset to CLOSED"}
     except ImportError:
         return {"message": "Circuit breaker not configured"}
+
+
+@app.get("/circuits/health")
+def circuit_health():
+    """Circuit breaker health for all agents"""
+    try:
+        from veda.agents.circuit_breaker import get_circuit_health
+        return get_circuit_health()
+    except ImportError:
+        return {"message": "Circuit breaker not configured"}
+
+@app.post("/circuits/reset")
+def reset_circuits():
+    """Reset all circuit breakers to CLOSED"""
+    try:
+        from veda.agents.circuit_breaker import circuit_registry
+        circuit_registry.reset_all()
+        return {"message": "All circuits reset to CLOSED"}
+    except ImportError:
+        return {"message": "Circuit breaker not configured"}

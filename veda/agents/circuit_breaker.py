@@ -1,4 +1,4 @@
-﻿import time, logging, functools, traceback
+﻿import time, logging, traceback
 from enum import Enum
 from typing import Any, Callable, Optional, Dict, List
 from datetime import datetime
@@ -17,7 +17,6 @@ class CircuitBreaker:
     failure_threshold: int = 3
     recovery_timeout: int = 60
     success_threshold: int = 1
-
     state: CircuitState = field(default=CircuitState.CLOSED, init=False)
     failure_count: int = field(default=0, init=False)
     success_count: int = field(default=0, init=False)
@@ -56,11 +55,10 @@ class CircuitBreaker:
         self.failure_count += 1
         self.last_failure_time = time.time()
         if self.state == CircuitState.HALF_OPEN:
-            log.warning(f"Circuit {self.name}: HALF_OPEN -> OPEN")
             self.state = CircuitState.OPEN
         elif self.state == CircuitState.CLOSED:
             if self.failure_count >= self.failure_threshold:
-                log.error(f"Circuit {self.name}: CLOSED -> OPEN ({self.failure_count} failures)")
+                log.error(f"Circuit {self.name}: CLOSED -> OPEN")
                 self.state = CircuitState.OPEN
 
     def execute(self, func, *args, **kwargs):
@@ -94,7 +92,6 @@ class CircuitBreaker:
         self.state = CircuitState.CLOSED
         self.failure_count = 0
         self.success_count = 0
-        log.info(f"Circuit {self.name}: manually reset")
 
 class CircuitOpenError(Exception):
     pass
@@ -171,12 +168,10 @@ class ResilientAgentExecutor:
         cb = circuit_registry.get(agent_name, failure_threshold=3, recovery_timeout=60)
         last_error = None
         retry_count = 0
-
         for attempt in range(self.max_retries + 1):
             try:
                 result = cb.execute(agent_func, state, *args, **kwargs)
                 duration = time.time() - start_time
-                log.info(f"Agent {agent_name} succeeded | attempt={attempt+1} | duration={duration:.2f}s")
                 r = AgentResult(agent_name=agent_name, success=True, duration_seconds=duration, result=result, retry_count=retry_count)
                 self.execution_log.append(r)
                 return r
@@ -188,30 +183,27 @@ class ResilientAgentExecutor:
                 retry_count = attempt
                 if attempt < self.max_retries:
                     delay = min(self.base_delay * (2 ** attempt), 30.0)
-                    log.warning(f"Agent {agent_name} failed (attempt {attempt+1}): {e}. Retry in {delay:.1f}s")
+                    log.warning(f"Agent {agent_name} retry {attempt+1}: {e}")
                     time.sleep(delay)
                 else:
                     duration = time.time() - start_time
-                    return self._apply_fallback(agent_name, str(last_error), fallback_strategy, duration, retry_count, traceback.format_exc())
+                    return self._apply_fallback(agent_name, str(last_error), fallback_strategy, duration, retry_count)
 
-    def _apply_fallback(self, agent_name, error, fallback_strategy, duration, retry_count, tb=None):
-        if fallback_strategy == "required":
+    def _apply_fallback(self, agent_name, error, strategy, duration, retry_count):
+        if strategy == "required":
             r = AgentResult(agent_name=agent_name, success=False, duration_seconds=duration, error=error, retry_count=retry_count)
             self.execution_log.append(r)
             raise PipelineFailureError(f"Required agent '{agent_name}' failed: {error}")
-        elif fallback_strategy == "skip":
-            log.warning(f"Agent {agent_name} skipped: {error}")
+        elif strategy == "skip":
             r = AgentResult(agent_name=agent_name, success=False, duration_seconds=duration, error=error, skipped=True, retry_count=retry_count)
         else:
-            log.warning(f"Agent {agent_name} using defaults: {error}")
             r = AgentResult(agent_name=agent_name, success=False, duration_seconds=duration, error=error, fallback_used=True, retry_count=retry_count)
         self.execution_log.append(r)
         return r
 
     def get_execution_summary(self):
-        total = len(self.execution_log)
         return {
-            "total_agents": total,
+            "total_agents": len(self.execution_log),
             "successful": sum(1 for r in self.execution_log if r.success),
             "failed": sum(1 for r in self.execution_log if not r.success and not r.skipped),
             "skipped": sum(1 for r in self.execution_log if r.skipped),
